@@ -9,9 +9,6 @@ from sklearn.metrics import precision_score, recall_score
 from sklearn.metrics import ConfusionMatrixDisplay, RocCurveDisplay, PrecisionRecallDisplay
 import matplotlib.pyplot as plt
 
-# -------------------------------
-# Main function
-# -------------------------------
 def main():
     st.title('Binary Classification Web App')
     st.sidebar.title('Binary Classification Web App')
@@ -20,18 +17,17 @@ def main():
 
     @st.cache_data(persist=True)
     def load_data():
-        df = pd.read_csv('mushrooms.csv')  # Kaggle file in your repo
-        df = df.replace('?', df.mode().iloc[0])  # Replace missing values
-        # Encode categorical columns
+        data = pd.read_csv('mushrooms.csv')  
+        data = data.replace('?', data.mode().iloc[0])  
         label = LabelEncoder()
-        for col in df.columns:
-            df[col] = label.fit_transform(df[col])
-        return df
+        for col in data.columns:
+            data[col] = label.fit_transform(data[col])
+        return data
 
     @st.cache_data(persist=True)
-    def split(df):
-        y = df['class']  # target column
-        X = df.drop(columns=['class'])
+    def split(data):
+        y = data['class']  
+        X = data.drop(columns=['class'])
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=8)
         return X_train, X_test, y_train, y_test
 
@@ -49,18 +45,16 @@ def main():
             PrecisionRecallDisplay.from_estimator(model, X_test, y_test)
             st.pyplot(plt.gcf())
 
-    # Load and split data
-    df = load_data()
-    X_train, X_test, y_train, y_test = split(df)
+   
+    data = load_data()
+    X_train, X_test, y_train, y_test = split(data)
     class_names = ['edible', 'poisonous']
 
-    # Sidebar - Classifier selection
+    
     st.sidebar.subheader("Choose Classifier")
     classifier = st.sidebar.selectbox("Classifier", ("Support Vector Machine", "Logistic Regression", "Random Forest"))
 
-    # -------------------------------
-    # SVM
-    # -------------------------------
+  
     if classifier == "Support Vector Machine":
         st.sidebar.subheader("Model Hyperparameters")
         C = st.sidebar.number_input("C (Regularization parameter)", 0.01, 10.0, step=0.01, key='C')
@@ -77,9 +71,7 @@ def main():
             st.write("Recall: ", round(recall_score(y_test, y_pred), 2))
             plot_metrics(metrics, model, X_test, y_test, class_names)
 
-    # -------------------------------
-    # Logistic Regression
-    # -------------------------------
+   
     if classifier == "Logistic Regression":
         st.sidebar.subheader("Model Hyperparameters")
         C = st.sidebar.number_input("C (Regularization parameter)", 0.01, 10.0, step=0.01, key='C_LR')
@@ -95,9 +87,7 @@ def main():
             st.write("Recall: ", round(recall_score(y_test, y_pred), 2))
             plot_metrics(metrics, model, X_test, y_test, class_names)
 
-    # -------------------------------
-    # Random Forest
-    # -------------------------------
+    
     if classifier == "Random Forest":
         st.sidebar.subheader("Model Hyperparameters")
         n_estimators = st.sidebar.number_input("Number of trees", 100, 5000, step=10, key='n_estimators')
@@ -115,10 +105,9 @@ def main():
             st.write("Recall: ", round(recall_score(y_test, y_pred), 2))
             plot_metrics(metrics, model, X_test, y_test, class_names)
 
-    # Show raw data
     if st.sidebar.checkbox("Show raw data", False):
         st.subheader("Mushroom Data Set (Classification)")
-        st.write(df)
+        st.write(data)
 
 # Run the app
 if __name__ == '__main__':
